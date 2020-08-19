@@ -1,0 +1,26 @@
+{
+    "name": "about-picture-server",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+        "serve": "nodemon ./index.js"
+    },
+    "devDependencies": {
+        "eslint": "^7.6.0",
+        "nodemon": "^2.0.4"
+    },
+    "dependencies": {
+        "@koa/router": "^9.3.1",
+        "formidable": "^1.2.2",
+        "jsonwebtoken": "^8.5.1",
+        "koa-body": "^4.2.0",
+        "koa-jwt": "^4.0.0",
+        "koa-static": "^5.0.0",
+        "koa2": "^2.0.0-alpha.7",
+        "log4js": "^6.3.0",
+        "moment": "^2.27.0",
+        "mysql": "^2.18.1",
+        "redis": "^3.0.2"
+    }
+}

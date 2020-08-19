@@ -1,0 +1,18 @@
+{
+    "vetur.format.options.tabSize": 4,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/yarn.lock": true,
+        // "**/dist": true,
+        // "**/build": true,
+        // "**/webpack.config.js": true,
+        // "**/.babelrc": true,
+        "**/node_modules": true,
+        "**/.gitignore": true,
+        "**/_dll_vendors": true
+    }
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>StaticTest</title>
+        <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.min.js"></script>
+    </head>
+    <body>
+        <h1>This is a test Page</h1>
+        <div><button id="login">登录</button><button id="btnGetInfo">getInfo</button><button id="btnPostInfo">postInfo</button></div>
+        <script>
+            login.addEventListener("click", () => {
+                axios.post("/account/login").then(res => console.log(res.data));
+            });
+            btnGetInfo.addEventListener("click", () => {});
+            btnPostInfo.addEventListener("click", () => {});
+        </script>
+        <script>
+            if (window.Worker) {
+                let worker = new Worker("worker.js");
+                worker.onmessage = e => console.log(`Main: Received message - ${e.data}`);
+                worker.postMessage("PING");
+            } else {
+                console.log("呜呜呜，不支持 Web Worker");
+            }
+        </script>
+    </body>
+</html>
