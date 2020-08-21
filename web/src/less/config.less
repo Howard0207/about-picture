@@ -1,0 +1,54 @@
+// 变量
+@white: #fff;
+@red: red;
+@pink: #ff3bd9;
+@blue-dark: #2260c9;
+@purple: #745cb1;
+@yellow: #f8ba00;
+@gray-light: #8d8d8d;
+@gray-border: #f0f0f0;
+
+// 函数
+.clearfix() {
+    display: block;
+    content: ".";
+    clear: both;
+    height: 0;
+    line-height: 0;
+    visibility: hidden;
+}
+
+.white-row(@pdpx:0px, @mrpx:0 0 20px 0) {
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: @pdpx;
+    margin: @mrpx;
+}
+
+// 文本省略号
+.text-overflow() {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+//经常同时使用到的高及行高，使用如.height(30px)
+.height(@h:30px) {
+    height: @h;
+    line-height: @h;
+}
+
+// 绝对定位
+.position-abs(@t:0,@r:0,@b:0,@l:0) {
+    position: absolute;
+    top: @t;
+    right: @r;
+    bottom: @b;
+    left: @l;
+}
+
+// 透明度
+.opacity(@opacity:30) {
+    opacity: @opacity / 100;
+    filter: alpha(opacity= @opacity);
+}

@@ -4,14 +4,20 @@
     "main": "index.js",
     "license": "MIT",
     "scripts": {
-        "start": ""
+        "start": "cross-env NODE_ENV=development webpack-dev-server"
     },
     "devDependencies": {
         "@babel/core": "^7.11.1",
+        "@babel/plugin-proposal-class-properties": "^7.10.4",
         "@babel/plugin-transform-runtime": "^7.11.0",
         "@babel/preset-env": "^7.11.0",
         "@babel/preset-react": "^7.10.4",
+        "antd-dayjs-webpack-plugin": "^1.0.1",
+        "autoprefixer": "^9.8.6",
         "babel-loader": "^8.1.0",
+        "babel-plugin-import": "^1.13.0",
+        "clean-webpack-plugin": "^3.0.0",
+        "copy-webpack-plugin": "^6.0.3",
         "cross-env": "^7.0.2",
         "css-loader": "^4.2.1",
         "eslint": "^7.6.0",
@@ -20,17 +26,27 @@
         "html-webpack-plugin": "^4.3.0",
         "less": "^3.12.2",
         "less-loader": "^6.2.0",
+        "postcss-loader": "^3.0.0",
         "style-loader": "^1.2.1",
         "url-loader": "^4.1.0",
         "webpack": "^4.44.1",
-        "webpack-cli": "^3.3.12"
+        "webpack-cli": "^3.3.12",
+        "webpack-dev-server": "^3.11.0"
     },
     "dependencies": {
+        "@ant-design/icons": "^4.2.2",
         "@babel/runtime": "^7.11.2",
+        "antd": "^4.5.4",
+        "axios": "^0.20.0",
         "babel-eslint": "^10.1.0",
+        "core-js": "^3.6.5",
+        "dayjs": "^1.8.34",
+        "rc-queue-anim": "^1.8.5",
         "react": "^16.13.1",
+        "react-dom": "^16.13.1",
         "react-hot-loader": "^4.12.21",
         "react-loadable": "^5.5.0",
-        "react-router-dom": "^5.2.0"
+        "react-router-dom": "^5.2.0",
+        "regenerator-runtime": "^0.13.7"
     }
 }
