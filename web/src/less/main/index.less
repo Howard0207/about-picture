@@ -9,13 +9,38 @@
         height: 80px;
         font-size: 20px;
         color: @white;
+        cursor: pointer;
         img {
-            display: block;
             margin-right: 10px;
             width: 40px;
         }
     }
-    .header {
+    .main__sider-logo--collapsed {
+        flex-wrap: wrap;
+        img {
+            margin-right: 0;
+            padding: 20px 0;
+        }
+        .main__sider-slogan {
+            display: none;
+        }
+    }
+    .main__header {
+        display: flex;
+        justify-content: space-between;
         background: @white;
+        .main__header--left {
+            .trigger {
+                line-height: 64px;
+                transition: color 0.3s;
+                font-size: 18px;
+                cursor: pointer;
+                &:hover {
+                    color: #1890ff;
+                }
+            }
+        }
+        .main__header--right {
+        }
     }
 }

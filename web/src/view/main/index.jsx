@@ -1,11 +1,33 @@
 import React, { PureComponent } from "react";
 import { withRouter, Switch } from "react-router-dom";
-import { Layout, Skeleton } from "antd";
+import { Layout, Menu, Dropdown, Skeleton, Badge, Avatar } from "antd";
+import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { Loading, RouteWithSubRoutes } from "_components";
-import { Menu } from "./components";
+import { SiderMenu } from "./components";
 import Loadable from "react-loadable";
 import "_less/main";
 const { Header, Content, Sider, Footer } = Layout;
+
+const menu = (
+    <Menu>
+        <Menu.Item>
+            <a target="_blank" rel="noopener noreferrer" href="http://www.alipay.com/">
+                1st menu item
+            </a>
+        </Menu.Item>
+        <Menu.Item>
+            <a target="_blank" rel="noopener noreferrer" href="http://www.taobao.com/">
+                2nd menu item
+            </a>
+        </Menu.Item>
+        <Menu.Item>
+            <a target="_blank" rel="noopener noreferrer" href="http://www.tmall.com/">
+                3rd menu item
+            </a>
+        </Menu.Item>
+        <Menu.Item danger>a danger item</Menu.Item>
+    </Menu>
+);
 
 const Compress = Loadable({
     loader: () => import(/* webpackPrefetch: true */ "../picture/compress"),
@@ -27,28 +49,47 @@ const routes = [
 class Main extends PureComponent {
     constructor(props) {
         super(props);
+        this.state = {
+            collapsed: false,
+        };
         console.log(props);
     }
 
+    toggle = () => {
+        this.setState({ collapsed: !this.state.collapsed });
+    };
+
     render() {
+        const { collapsed } = this.state;
         return (
             <Layout className="main">
-                <Sider trigger={null} collapsible width={256}>
-                    <div className="main__sider-logo">
+                <Sider trigger={null} collapsible width={256} collapsed={collapsed}>
+                    <div className={collapsed ? "main__sider-logo main__sider-logo--collapsed" : "main__sider-logo"}>
                         <img src="https://preview.pro.ant.design/static/logo.f0355d39.svg" alt="" />
-                        <div>Realize Idea</div>
+                        <div className="main__sider-slogan">Realize Idea</div>
                     </div>
-                    <Menu />
+                    <SiderMenu />
                 </Sider>
                 <Layout className="site-layout">
-                    <Header className="header" theme="light">
-                        <div className="header-left">
-                            {/* <img src={defaultLogo} alt="logo" className="header-left-logo" /> */}
+                    <Header className="main__header" theme="light">
+                        <div className="main__header--left">
+                            {collapsed ? (
+                                <MenuUnfoldOutlined className="trigger" onClick={this.toggle} />
+                            ) : (
+                                <MenuFoldOutlined className="trigger" onClick={this.toggle} />
+                            )}
+                        </div>
+                        <div className="main__header--right">
+                            <Dropdown overlay={menu} placement="bottomCenter">
+                                <Badge count={1}>
+                                    <Avatar size={40} src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
+                                </Badge>
+                            </Dropdown>
                         </div>
                     </Header>
                     <Content style={{ margin: "24px 16px 0" }}>
                         <Switch>
-                            {routes.map((route) => (
+                            {routes.map(route => (
                                 <RouteWithSubRoutes key={route.path} {...route} />
                             ))}
                         </Switch>

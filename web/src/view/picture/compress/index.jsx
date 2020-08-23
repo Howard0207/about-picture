@@ -43,11 +43,11 @@ var chunkSize = 200 * 1024; // 切片大小
 class Compress extends PureComponent {
     constructor(props) {
         super(props);
-        this.state = { fileList: [], waitUploadList: [] };
+        this.state = { fileList: [] };
     }
 
     // 计算文件大小
-    transformByte = (size) => {
+    transformByte = size => {
         if (!size) {
             return "0B";
         }
@@ -73,18 +73,20 @@ class Compress extends PureComponent {
     };
 
     handleUpload = async () => {
-        const { waitUploadList } = this.state;
-        if (waitUploadList.length === 0) {
+        const { fileList } = this.state;
+        if (fileList.length === 0) {
             return false;
         }
         console.log("handleupload ----------------------- start");
-        for (let i = 0; i < waitUploadList.length; i++) {
+        for (let i = 0; i < fileList.length; i++) {
             fileIndex = i;
             if (["secondPass", "success"].includes(filesArr[i].status)) {
                 console.log("跳过已上传成功或已秒传的");
                 continue;
             }
-            const fileChunkList = this.createFileChunk(filesArr[i]);
+            // 对文件进行分片
+            const fileChunkList = this.createFileChunk(filesArr[i].file);
+            await this.uploadChunk(fileChunkList);
         }
     };
 
@@ -93,28 +95,32 @@ class Compress extends PureComponent {
         const fileChunkList = [];
         var count = 0;
         while (count < file.size) {
-            fileChunkList.push({
-                file: file.slice(count, count + size),
-            });
+            fileChunkList.push({ file: file.slice(count, count + size) });
             count += size;
         }
         console.log("createFileChunk -> fileChunkList", fileChunkList);
         return fileChunkList;
     };
 
-    calculateFileHash = (fileChunkList) => {};
+    calculateFileHash = fileChunkList => {};
 
-    uploadChunk = async (chunk) => {
+    uploadChunk = async chunk => {
+        const form = new FormData();
+        form.append("file", chunk[index]);
         axios.post(url, {});
+    };
+
+    sendRequset = async () => {
+        const handler = () => {};
     };
 
     render() {
         const { fileList } = this.state;
         console.log(fileList);
         const props = {
-            beforeUpload: (file) => {
-                this.setState((state) => ({
-                    fileList: [...state.fileList, file],
+            beforeUpload: file => {
+                this.setState(state => ({
+                    fileList: [...state.fileList, { file: file, status: "wait", uploadProgress: 0 }],
                     waitUploadList: [...state.waitUploadList, file],
                 }));
                 return false;
@@ -137,12 +143,12 @@ class Compress extends PureComponent {
                     <Button>恢复</Button>
                     <Button onClick={this.emptyFile}>清空</Button>
                 </header>
-                <main className="main">
+                <main className="compress__main">
                     {fileList.length > 0 ? (
                         <QueueAnim delay={300} className="queue-simple">
-                            {fileList.map((item) => {
+                            {fileList.map(item => {
                                 return (
-                                    <div key={item.uid} className="upload-item">
+                                    <div key={item.file.uid} className="upload-item">
                                         <div className="upload-name">名称：{item.name}</div>
                                         <div className="upload-size">大小：{this.transformByte(item.size)}</div>
                                         <div className="upload-progress">
