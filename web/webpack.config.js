@@ -21,12 +21,13 @@ module.exports = {
         hot: true,
         host: "0.0.0.0",
         historyApiFallback: true,
-        proxy: {
-            "/api": {
-                target: "localhost://10000",
+        proxy: [
+            {
+                context: ["/account", "/upload", "/static", "/gallery", "/pictures", "/compress"],
+                target: "http://localhost:10000",
                 changeOrigin: true,
             },
-        },
+        ],
     },
     module: {
         rules: [
@@ -75,6 +76,9 @@ module.exports = {
             _components: path.resolve(__dirname, "./src/components"),
             _less: path.resolve(__dirname, "./src/less"),
             _const: path.resolve(__dirname, "./src/const"),
+            _api: path.resolve(__dirname, "./src/api"),
+            _static: path.resolve(__dirname, "./src/static"),
+            _utils: path.resolve(__dirname, "./src/utils"),
         },
         extensions: [".jsx", ".js", ".less", ".css"],
     },
