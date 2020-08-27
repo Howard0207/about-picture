@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
 import { Menu } from "antd";
-import Icon, { PictureOutlined } from "@ant-design/icons";
+import Icon, { PictureOutlined, BranchesOutlined } from "@ant-design/icons";
 const { SubMenu } = Menu;
 const defaultMenu = [
     {
@@ -22,12 +22,24 @@ const defaultMenu = [
             },
         ],
     },
+    {
+        name: "一次图",
+        path: "primary-electrical-overview",
+        icon: BranchesOutlined,
+        child: [
+            {
+                name: "项目列表",
+                path: "/",
+                child: [],
+            },
+        ],
+    },
 ];
 function SiderMenu(props) {
     const [menu, setMenu] = useState(defaultMenu);
 
-    const getMenu = menuList => {
-        return menuList.map(item => {
+    const getMenu = (menuList) => {
+        return menuList.map((item) => {
             if (item.child.length > 0) {
                 return (
                     <SubMenu key={item.path} title={item.name} icon={<Icon component={item.icon} />}>
@@ -39,7 +51,7 @@ function SiderMenu(props) {
         });
     };
 
-    const handleClick = item => {
+    const handleClick = (item) => {
         console.log(item);
     };
 
@@ -50,7 +62,8 @@ function SiderMenu(props) {
             onClick={handleClick}
             // defaultOpenKeys={["sub1"]}
             // selectedKeys={[this.state.current]}
-            mode="inline">
+            mode="inline"
+        >
             {getMenu(menu)}
         </Menu>
     );

@@ -1,0 +1,61 @@
+@import "../config.less";
+.primary-electrical-overview {
+    height: calc(100% - 70px);
+    .primary-electrical__project-info {
+        padding: 30px 20px 6px;
+        background: @white;
+        border: 1px solid @gray-border;
+        border-radius: 6px;
+        .project-info__form {
+            display: flex;
+            align-items: center;
+            .ant-form-item {
+                margin-right: 20px;
+            }
+        }
+    }
+    .primary-electrical__edit {
+        display: flex;
+        padding: 20px 0 0;
+        height: calc(100% - 94px);
+        .components-container {
+            width: 200px;
+            background: @white;
+            border-radius: 6px;
+            .added-component {
+                width: 50px;
+                height: 50px;
+                margin: 10px auto;
+                text-align: center;
+                border: 1px solid @gray-border;
+                border-radius: 3px;
+            }
+        }
+        .paint-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 20px;
+            overflow: auto;
+            background: @white;
+            border-radius: 6px;
+            canvas {
+                background: #000;
+            }
+        }
+        .options-container {
+            width: 200px;
+            background: @white;
+            border-radius: 6px;
+            .component {
+                width: 50px;
+                height: 50px;
+                margin: 10px auto;
+                text-align: center;
+                border: 1px solid @gray-border;
+                border-radius: 3px;
+            }
+        }
+    }
+}
