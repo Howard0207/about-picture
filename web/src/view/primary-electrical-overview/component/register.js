@@ -6,13 +6,11 @@ class Register {
         this.elementHeight = 20;
         this.positionX = 100;
         this.positionY = 100;
+        this.selected = false;
         Object.assign(this, props);
     }
-    set = (elementWidth, elementHeight, positionX, positionY) => {
-        this.elementWidth = elementWidth;
-        this.elementHeight = elementHeight;
-        this.positionX = positionX;
-        this.positionY = positionY;
+    update = properties => {
+        Object.assign(this, properties);
     };
     setSize = (elementWidth, elementHeight) => {
         this.elementWidth = elementWidth;
@@ -22,8 +20,9 @@ class Register {
         this.positionX = positionX;
         this.positionY = positionY;
     }
-    isPointInPath = (x, y) => {
+    isPoint = position => {
         const { positionX, positionY, elementWidth, elementHeight } = this;
+        const { x, y } = position;
         if (
             x >= positionX - elementWidth / 2 &&
             x <= positionX + elementWidth / 2 &&
@@ -34,8 +33,10 @@ class Register {
         }
         return false;
     };
-    render = (ctx) => {
+    render = ctx => {
         const { positionX, positionY, elementWidth, elementHeight } = this;
+        // console.log(positionX, positionY, elementWidth, elementHeight);
+
         ctx.save();
         ctx.beginPath();
         ctx.fillStyle = this.color;
