@@ -8,6 +8,7 @@ const { TOKENSECRET } = require("./config");
 const { ErrorResponse } = require("./model/response");
 const account = require("./router/account");
 const upload = require("./router/upload");
+const primaryElectricalOverview = require("./router/primary-electrical-overview");
 const app = new Koa();
 
 app.use(koaStatic("public"));
@@ -48,6 +49,9 @@ app.use(account);
 
 // 添加 upload 路由
 app.use(upload);
+
+// 添加一次图路由
+app.use(primaryElectricalOverview);
 
 app.listen(10000, () => {
     console.log("服务已启动，10000端口监听中...");

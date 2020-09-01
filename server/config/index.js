@@ -4,7 +4,7 @@ const MYSQL_CONFIG = {
     host: "localhost",
     user: "root",
     password: "root",
-    database: "test",
+    database: "electrical-graphic",
 };
 
 const REDIS_CONIFG = {

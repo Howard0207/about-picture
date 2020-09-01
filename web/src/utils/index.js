@@ -1,3 +1,6 @@
+// 获取数组prototype方法
+const { slice } = Array.prototype;
+
 export const errorCapture = async (asyncFunc, ...params) => {
     try {
         const res = await asyncFunc(...params);
@@ -6,6 +9,35 @@ export const errorCapture = async (asyncFunc, ...params) => {
         return [error];
     }
 };
+
+/**
+ * 防抖
+ * @param {type: Function, desc: 防抖函数} fn
+ * @param {type: number, desc: 防抖时间} delay
+ * @param {type: Boolean, desc: 是否立即执行} immediate
+ */
+export function debounce(fn, delay, immediate) {
+    let timer;
+    return function () {
+        const args = slice.call(arguments);
+        const context = this;
+        let result;
+        if (timer) clearTimeout(timer);
+        if (immediate) {
+            if (!timer) {
+                result = fn.apply(context, args);
+            }
+            timer = setTimeout(() => {
+                timer = null;
+            }, delay);
+        } else {
+            timer = setTimeout(() => {
+                fn.apply(context, args);
+            }, delay);
+        }
+        return result;
+    };
+}
 
 /**
  * canvas一些基本的工具函数
@@ -57,7 +89,12 @@ C.createColor = function () {
 
 // 矩形之间的碰撞检测
 C.rectDuang = function (rect1, rect2) {
-    return rect1.x + rect1.w >= rect2.x && rect1.x <= rect2.x + rect2.w && rect1.y + rect1.h >= rect2.y && rect1.y <= rect2.y + rect2.h;
+    return (
+        rect1.x + rect1.w >= rect2.x &&
+        rect1.x <= rect2.x + rect2.w &&
+        rect1.y + rect1.h >= rect2.y &&
+        rect1.y <= rect2.y + rect2.h
+    );
 };
 
 // 求俩点间的距离

@@ -19,16 +19,60 @@
         padding: 20px 0 0;
         height: calc(100% - 94px);
         .components-container {
+            display: flex;
+            flex-direction: column;
             width: 200px;
-            background: @white;
-            border-radius: 6px;
-            .added-component {
-                width: 50px;
-                height: 50px;
-                margin: 10px auto;
-                text-align: center;
+            user-select: none;
+            .components__added {
+                height: 50%;
+                padding: 10px 15px;
+                margin-bottom: 10px;
                 border: 1px solid @gray-border;
-                border-radius: 3px;
+                background: @white;
+                border-radius: 6px;
+                .components__added-title {
+                    padding: 10px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    border-bottom: 1px solid @gray-border;
+                }
+                .components__list {
+                    margin-right: -10px;
+                    padding-right: 10px;
+                    height: calc(100% - 42px);
+                    overflow-y: auto;
+                    .added-component {
+                        width: 50px;
+                        height: 50px;
+                        margin: 10px auto;
+                        text-align: center;
+                        border: 1px solid @gray-border;
+                        border-radius: 3px;
+                    }
+                }
+            }
+            .components__exist {
+                height: 50%;
+                padding: 10px 15px;
+                margin-top: 10px;
+                overflow-y: auto;
+                border: 1px solid @gray-border;
+                background: @white;
+                border-radius: 6px;
+                .components__exist-title {
+                    padding: 10px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    border-bottom: 1px solid @gray-border;
+                }
+                .component {
+                    width: 50px;
+                    height: 50px;
+                    margin: 10px auto;
+                    text-align: center;
+                    border: 1px solid @gray-border;
+                    border-radius: 3px;
+                }
             }
         }
         .paint-container {
@@ -44,17 +88,36 @@
                 background: #000;
             }
         }
-        .options-container {
-            width: 200px;
+        .component__properties {
+            width: 300px;
             background: @white;
             border-radius: 6px;
-            .component {
-                width: 50px;
-                height: 50px;
-                margin: 10px auto;
-                text-align: center;
-                border: 1px solid @gray-border;
-                border-radius: 3px;
+            .component_properties-title {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin: 0 15px 10px;
+                padding: 10px 0;
+                border-bottom: 1px solid @gray-border;
+                .title-text {
+                    font-weight: 500;
+                }
+            }
+            .component__properties-form {
+                padding: 10px 15px;
+                .component__properties-position-wrap {
+                    .label {
+                        width: 80px;
+                        text-align: right;
+                        display: inline-block;
+                        margin-bottom: 10px;
+                    }
+                }
+                .ant-form-item {
+                    .ant-form-item-label {
+                        width: 80px;
+                    }
+                }
             }
         }
     }
