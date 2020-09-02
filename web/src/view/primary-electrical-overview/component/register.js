@@ -9,18 +9,10 @@ class Register {
         this.selected = false;
         Object.assign(this, props);
     }
-    update = properties => {
+    update = (properties) => {
         Object.assign(this, properties);
     };
-    setSize = (elementWidth, elementHeight) => {
-        this.elementWidth = elementWidth;
-        this.elementHeight = elementHeight;
-    };
-    setPosition(positionX, positionY) {
-        this.positionX = positionX;
-        this.positionY = positionY;
-    }
-    isPoint = position => {
+    isPoint = (position) => {
         const { positionX, positionY, elementWidth, elementHeight } = this;
         const { x, y } = position;
         if (
@@ -33,7 +25,7 @@ class Register {
         }
         return false;
     };
-    render = ctx => {
+    render = (ctx) => {
         const { positionX, positionY, elementWidth, elementHeight } = this;
         // console.log(positionX, positionY, elementWidth, elementHeight);
 

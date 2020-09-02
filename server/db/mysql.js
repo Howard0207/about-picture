@@ -18,6 +18,39 @@ const executeSql = (sql) => {
     });
 };
 
+const executeTransaction = (statement, params) => {
+    return new Promise((resolve, reject) => {
+        const conn = pool.getConnection();
+        conn.beginTransaction(function (err) {
+            if (err) throw err;
+            conn.query("INSERT INTO posts SET title=?", ...params, function (error, results, fields) {
+                if (error) {
+                    return conn.rollback(function () {
+                        throw error;
+                    });
+                }
+
+                var log = "Post " + results.insertId + " added";
+
+                conn.query("INSERT INTO log SET data=?", log, function (error, results, fields) {
+                    if (error) {
+                        return conn.rollback(function () {
+                            throw error;
+                        });
+                    }
+                    conn.commit(function (err) {
+                        if (err) {
+                            return conn.rollback(function () {
+                                throw err;
+                            });
+                        }
+                        console.log("success!");
+                    });
+                });
+            });
+        });
+    });
+};
 // executeSql("SELECT * FROM ausers")
 //     .then((result) => {
 //         console.log("The solution is: ", result[0]);

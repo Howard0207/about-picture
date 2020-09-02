@@ -1,10 +1,12 @@
 const TOKENSECRET = "tokenSecret";
 const MYSQL_CONFIG = {
-    connectionLimit: 10,
     host: "localhost",
     user: "root",
     password: "root",
     database: "electrical-graphic",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
 };
 
 const REDIS_CONIFG = {
