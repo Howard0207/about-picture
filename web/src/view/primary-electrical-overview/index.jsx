@@ -6,13 +6,14 @@ import Register from "./component/register";
 import { Form, Input, Button, InputNumber, Checkbox } from "antd";
 import C, { debounce } from "_utils";
 import axios from "_service";
+import ElementPainter from "primary-electrical-graphic-system";
 
 let dx = 0;
 let dy = 0;
 let count = 0;
 class ElectricalOverview extends React.Component {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         this.state = {
             canvas: React.createRef(),
             componentFormRef: React.createRef(),
@@ -47,8 +48,16 @@ class ElectricalOverview extends React.Component {
         const componentY = mouseY - y;
         const register = new Register({ positionX: componentX, positionY: componentY });
         register.update({ number: count++ });
+        // ---------------
+        this.painter.add(register);
         componentList.push(register);
-        register.render(this.ctx);
+        // ---------------
+
+        // ---------------
+        this.painter.render(this.ctx);
+        // register.render(this.ctx);
+        // ---------------
+
         this.setState({ componentList, selectedComponent: register }, () => {
             const form = componentFormRef.current;
             const { name, id, positionX, positionY, showBorder } = register;
@@ -62,12 +71,12 @@ class ElectricalOverview extends React.Component {
         });
     };
 
-    // 更新组件坐标
+    // 更新组件表单坐标
     updateSelectedComponentFormPosition = () => {
         const { selectedComponent, componentFormRef } = this.state;
         const { positionX, positionY } = selectedComponent;
         const form = componentFormRef.current;
-        form.setFieldsValue({ positionX: positionX + "", positionY: positionY + "" });
+        form.setFieldsValue({ positionX: positionX, positionY: positionY });
     };
 
     saveComponentProperties = () => {
@@ -114,24 +123,6 @@ class ElectricalOverview extends React.Component {
         }, 100);
     };
 
-    moveBallFn = () => {
-        const { selectedComponent, imgBeforeNextRender } = this.state;
-        if (imgBeforeNextRender) {
-            this.ctx.clearRect(0, 0, 800, 600);
-            this.ctx.drawImage(imgBeforeNextRender, 0, 0);
-            selectedComponent.positionX = this.mouse.x - dx;
-            selectedComponent.positionY = this.mouse.y - dy;
-            selectedComponent.render(this.ctx);
-            this.updateSelectedComponentFormPosition();
-        }
-    };
-
-    upBallFn = () => {
-        const { canvas } = this.state;
-        this.setState({ imgBeforeNextRender: null });
-        canvas.current.removeEventListener("mousemove", this.moveBallFn);
-    };
-
     getImgBeforeNextData = (selectedComponent) => {
         const { canvas, componentList } = this.state;
         const list = componentList.filter((item) => !item.selected);
@@ -148,8 +139,10 @@ class ElectricalOverview extends React.Component {
 
     componentDidMount() {
         const { canvas, componentList } = this.state;
+        this.painter = new ElementPainter(canvas.current);
+
         this.mouse = C.getOffset(canvas.current);
-        this.initCanvas();
+        // this.initCanvas();
         this.updateSelectedComponentFormPosition = debounce(this.updateSelectedComponentFormPosition, 200, false);
         canvas.current.addEventListener("mousedown", (e) => {
             e.preventDefault();
