@@ -57,12 +57,12 @@ const routes = [
 ];
 
 class Main extends PureComponent {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         this.state = {
             collapsed: false,
         };
-        console.log(props);
+        console.log();
     }
 
     toggle = () => {
@@ -92,17 +92,14 @@ class Main extends PureComponent {
                         <div className="main__header--right">
                             <Dropdown overlay={menu} placement="bottomCenter">
                                 <Badge count={1}>
-                                    <Avatar
-                                        size={40}
-                                        src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
-                                    />
+                                    <Avatar size={40} src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
                                 </Badge>
                             </Dropdown>
                         </div>
                     </Header>
                     <Content style={{ margin: "24px 16px 0" }}>
                         <Switch>
-                            {routes.map((route) => (
+                            {routes.map(route => (
                                 <RouteWithSubRoutes key={route.path} {...route} />
                             ))}
                         </Switch>

@@ -28,18 +28,18 @@ class ElectricalOverview extends React.Component {
         this.ctx = canvas.current.getContext("2d");
     };
 
-    handleDragStart = (e) => {
+    handleDragStart = e => {
         // console.log(e.target);
     };
 
-    onDragEnd = (e) => {
+    onDragEnd = e => {
         // console.log(e);
     };
 
-    handleDragEnter = (e) => {
+    handleDragEnter = e => {
         e.preventDefault();
     };
-    handleDrop = (e) => {
+    handleDrop = e => {
         const { canvas, componentList, componentFormRef } = this.state;
         const mouseX = e.pageX;
         const mouseY = e.pageY;
@@ -87,13 +87,11 @@ class ElectricalOverview extends React.Component {
         this.updateSelectedComponentRender();
     };
 
-    saveProject = (values) => {
+    saveProject = values => {
         const { componentList } = this.state;
-        axios
-            .put("/primary-electrical/project-create", { projectInfo: values, elements: componentList })
-            .then((res) => {
-                console.log(res);
-            });
+        axios.put("/primary-electrical/project-create", { projectInfo: values, elements: componentList }).then(res => {
+            console.log(res);
+        });
         console.log(values);
     };
 
@@ -123,11 +121,11 @@ class ElectricalOverview extends React.Component {
         }, 100);
     };
 
-    getImgBeforeNextData = (selectedComponent) => {
+    getImgBeforeNextData = selectedComponent => {
         const { canvas, componentList } = this.state;
-        const list = componentList.filter((item) => !item.selected);
+        const list = componentList.filter(item => !item.selected);
         this.ctx.clearRect(0, 0, 800, 600);
-        list.forEach((item) => {
+        list.forEach(item => {
             item.render(this.ctx);
         });
         const data = canvas.current.toDataURL();
@@ -141,32 +139,30 @@ class ElectricalOverview extends React.Component {
         const { canvas, componentList } = this.state;
         this.painter = new ElementPainter(canvas.current);
 
-        this.mouse = C.getOffset(canvas.current);
-        // this.initCanvas();
-        this.updateSelectedComponentFormPosition = debounce(this.updateSelectedComponentFormPosition, 200, false);
-        canvas.current.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-            let selectedComponent = null;
-            let imageData = null;
-            for (let item of componentList) {
-                if (item.isPoint(this.mouse)) {
-                    dx = this.mouse.x - item.positionX;
-                    dy = this.mouse.y - item.positionY;
-                    canvas.current.addEventListener("mousemove", this.moveBallFn);
-                    canvas.current.addEventListener("mouseup", this.upBallFn);
-                    item.update({ selected: true });
-                    selectedComponent = item;
-                    continue;
-                }
-                item.update({ selected: false });
-            }
-            if (selectedComponent) {
-                imageData = this.getImgBeforeNextData(selectedComponent);
-                this.setState({ selectedComponent, imgBeforeNextRender: imageData }, function () {
-                    this.updateSelectedComponentFormPosition();
-                });
-            }
-        });
+        // this.updateSelectedComponentFormPosition = debounce(this.updateSelectedComponentFormPosition, 200, false);
+        // canvas.current.addEventListener("mousedown", e => {
+        //     e.preventDefault();
+        //     let selectedComponent = null;
+        //     let imageData = null;
+        //     for (let item of componentList) {
+        //         if (item.isPoint(this.mouse)) {
+        //             dx = this.mouse.x - item.positionX;
+        //             dy = this.mouse.y - item.positionY;
+        //             canvas.current.addEventListener("mousemove", this.moveBallFn);
+        //             canvas.current.addEventListener("mouseup", this.upBallFn);
+        //             item.update({ selected: true });
+        //             selectedComponent = item;
+        //             continue;
+        //         }
+        //         item.update({ selected: false });
+        //     }
+        //     if (selectedComponent) {
+        //         imageData = this.getImgBeforeNextData(selectedComponent);
+        //         this.setState({ selectedComponent, imgBeforeNextRender: imageData }, function () {
+        //             this.updateSelectedComponentFormPosition();
+        //         });
+        //     }
+        // });
     }
 
     render() {
@@ -180,21 +176,12 @@ class ElectricalOverview extends React.Component {
                         initialValues={{
                             remember: true,
                         }}
-                        onFinish={this.saveProject}
-                    >
-                        <Form.Item
-                            label="项目名称："
-                            name="projectName"
-                            rules={[{ required: true, message: "请输入项目名称" }]}
-                        >
+                        onFinish={this.saveProject}>
+                        <Form.Item label="项目名称：" name="projectName" rules={[{ required: true, message: "请输入项目名称" }]}>
                             <Input />
                         </Form.Item>
 
-                        <Form.Item
-                            label="项目ID："
-                            name="projectId"
-                            rules={[{ required: true, message: "请输入项目ID！" }]}
-                        >
+                        <Form.Item label="项目ID：" name="projectId" rules={[{ required: true, message: "请输入项目ID！" }]}>
                             <Input />
                         </Form.Item>
 
@@ -210,7 +197,7 @@ class ElectricalOverview extends React.Component {
                         <div className="components__added">
                             <div className="components__added-title">已添加Element</div>
                             <div className="components__list">
-                                {componentList.map((item) => {
+                                {componentList.map(item => {
                                     return (
                                         <div className="added-component" key={Math.random()}>
                                             a
@@ -221,48 +208,22 @@ class ElectricalOverview extends React.Component {
                         </div>
                         <div className="components__exist">
                             <div className="components__exist-title">已有Element</div>
-                            <div
-                                className="component"
-                                draggable
-                                onDragStart={this.handleDragStart}
-                                onDragEnd={this.onDragEnd}
-                            >
+                            <div className="component" draggable onDragStart={this.handleDragStart} onDragEnd={this.onDragEnd}>
                                 as
                             </div>
-                            <div
-                                className="component"
-                                draggable
-                                onDragStart={this.handleDragStart}
-                                onDragEnd={this.onDragEnd}
-                            >
+                            <div className="component" draggable onDragStart={this.handleDragStart} onDragEnd={this.onDragEnd}>
                                 bs
                             </div>
-                            <div
-                                className="component"
-                                draggable
-                                onDragStart={this.handleDragStart}
-                                onDragEnd={this.onDragEnd}
-                            >
+                            <div className="component" draggable onDragStart={this.handleDragStart} onDragEnd={this.onDragEnd}>
                                 cs
                             </div>
-                            <div
-                                className="component"
-                                draggable
-                                onDragStart={this.handleDragStart}
-                                onDragEnd={this.onDragEnd}
-                            >
+                            <div className="component" draggable onDragStart={this.handleDragStart} onDragEnd={this.onDragEnd}>
                                 ds
                             </div>
                         </div>
                     </div>
                     <div className="paint-container">
-                        <canvas
-                            ref={canvas}
-                            width={800}
-                            height={600}
-                            onDrop={this.handleDrop}
-                            onDragOver={this.handleDragEnter}
-                        ></canvas>
+                        <canvas ref={canvas} width={800} height={600} onDrop={this.handleDrop} onDragOver={this.handleDragEnter}></canvas>
                     </div>
                     <div className="component__properties">
                         <div className="component_properties-title">
@@ -275,11 +236,7 @@ class ElectricalOverview extends React.Component {
                             <Form.Item label="元件名称：" name="name">
                                 <Input />
                             </Form.Item>
-                            <Form.Item
-                                label="元件ID："
-                                name="id"
-                                rules={[{ required: true, message: "请输入元件ID！" }]}
-                            >
+                            <Form.Item label="元件ID：" name="id" rules={[{ required: true, message: "请输入元件ID！" }]}>
                                 <Input />
                             </Form.Item>
                             <Form.Item label="显示轮廓：" name="showBorder">
@@ -287,25 +244,11 @@ class ElectricalOverview extends React.Component {
                             </Form.Item>
                             <div className="component__properties-position-wrap">
                                 <span className="label">元件位置：</span>
-                                <Form.Item
-                                    label="x"
-                                    name="positionX"
-                                    rules={[{ required: true, message: "请输入元件坐标！" }]}
-                                >
-                                    <InputNumber
-                                        min={0}
-                                        onChange={debounce(this.componentInpuntPositionChange.bind(this, "positionX"))}
-                                    />
+                                <Form.Item label="x" name="positionX" rules={[{ required: true, message: "请输入元件坐标！" }]}>
+                                    <InputNumber min={0} onChange={debounce(this.componentInpuntPositionChange.bind(this, "positionX"))} />
                                 </Form.Item>
-                                <Form.Item
-                                    label="y"
-                                    name="positionY"
-                                    rules={[{ required: true, message: "请输入元件坐标！" }]}
-                                >
-                                    <InputNumber
-                                        min={0}
-                                        onChange={debounce(this.componentInpuntPositionChange.bind(this, "positionY"))}
-                                    />
+                                <Form.Item label="y" name="positionY" rules={[{ required: true, message: "请输入元件坐标！" }]}>
+                                    <InputNumber min={0} onChange={debounce(this.componentInpuntPositionChange.bind(this, "positionY"))} />
                                 </Form.Item>
                             </div>
                         </Form>
