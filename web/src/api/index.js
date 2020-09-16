@@ -1,4 +1,5 @@
-import axios from "./service";
+import axios from "_service";
+const CancelToken = axios.CancelToken;
 
 // 上传文件chunk
 export const uploadFileChunk = (requestParams) => {
@@ -7,4 +8,18 @@ export const uploadFileChunk = (requestParams) => {
             return res.data;
         }
     });
+};
+
+export const testCancelToken = () => {
+    let cancel;
+    let request = axios
+        .get("/primary-electrical/testCancelToken", {
+            cancelToken: new CancelToken(function executor(c) {
+                cancel = c;
+            }),
+        })
+        .then((res) => {
+            console.log(res);
+        });
+    return [request, cancel];
 };

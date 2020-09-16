@@ -16,26 +16,24 @@ module.exports = {
         publicPath: "/",
     },
     devServer: {
-        contentBase: "./dist",
-        port: 9000,
-        hot: true,
+        contentBase: path.resolve(__dirname, "dist"),
+        port: "9000",
         host: "0.0.0.0",
+        hot: true,
         historyApiFallback: true,
         proxy: [
             {
-                context: [
-                    "/account",
-                    "/upload",
-                    "/static",
-                    "/gallery",
-                    "/pictures",
-                    "/compress",
-                    "/primary-electrical",
-                ],
-                target: "http://localhost:10000",
+                context: ["/account", "/upload", "/pictures", "/compress", "/primary-electrical"],
+                target: "http://localhost:10100",
                 changeOrigin: true,
             },
         ],
+        // proxy: {
+        //     "/primary-electrical": {
+        //         target: "http://localhost:10000",
+        //         changeOrigin: true,
+        //     },
+        // },
     },
     module: {
         rules: [

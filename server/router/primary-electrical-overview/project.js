@@ -17,4 +17,23 @@ router.put("/project-create", async (ctx) => {
         message: "访问成功",
     };
 });
+
+router.get("/testCancelToken", async (ctx) => {
+    // const { body } = ctx.request;
+    // console.log(body);
+    // ctx.body = {
+    //     code: 200,
+    //     message: "访问成功",
+    // };
+    // return;
+    await new Promise((resolve) => {
+        setTimeout(() => {
+            resolve("success");
+        }, 10000);
+    });
+    ctx.body = {
+        code: 200,
+        message: "访问成功",
+    };
+});
 module.exports = router.routes();

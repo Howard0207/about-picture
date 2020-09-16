@@ -53,6 +53,6 @@ app.use(upload);
 // 添加一次图路由
 app.use(primaryElectricalOverview);
 
-app.listen(10000, () => {
-    console.log("服务已启动，10000端口监听中...");
+app.listen(10100, () => {
+    console.log("服务已启动，10100端口监听中...");
 });
