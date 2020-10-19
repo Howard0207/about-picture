@@ -2,4 +2,5 @@ import Loading from "./loading";
 
 import RouteWithSubRoutes from "./routeWithSubRoutes";
 
-export { Loading, RouteWithSubRoutes };
+import ErrorComponent from "./errorBoundary";
+export { Loading, RouteWithSubRoutes, ErrorComponent };
