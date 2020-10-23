@@ -5,7 +5,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const AntdDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const ENV = process.env.NODE_ENV;
-
+const { styles } = require("@ckeditor/ckeditor5-dev-utils");
 module.exports = {
     mode: "development",
     devtool: "inline-source-map",
@@ -47,7 +47,7 @@ module.exports = {
                 use: ["style-loader", "css-loader", "postcss-loader", "less-loader"],
             },
             {
-                test: /\.(jpg|png|gif)$/,
+                test: /\.(jpg|png|gif|svg)$/,
                 use: [
                     {
                         loader: "url-loader",

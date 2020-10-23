@@ -1,10 +1,9 @@
 import React, { PureComponent } from "react";
 import { withRouter, Switch } from "react-router-dom";
 import { Layout, Menu, Dropdown, Skeleton, Badge, Avatar } from "antd";
-import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-import { Loading, RouteWithSubRoutes } from "_components";
+import { MenuUnfoldOutlined, MenuFoldOutlined, BookFilled } from "@ant-design/icons";
+import { RouteWithSubRoutes } from "_components";
 import { SiderMenu } from "./components";
-import Loadable from "react-loadable";
 import "_less/main";
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -29,40 +28,13 @@ const menu = (
     </Menu>
 );
 
-const Compress = Loadable({
-    loader: () => import(/* webpackPrefetch: true */ "../picture/compress"),
-    loading: Loading("loadable-loading__page"),
-});
-
-const ElectricalOverview = Loadable({
-    loader: () => import(/* webpackPrefetch: true */ "../primary-electrical-overview"),
-    loading: Loading("loadable-loading__page"),
-});
-
-const routes = [
-    {
-        path: "/electrical-overview",
-        exact: true,
-        component: ElectricalOverview,
-    },
-    {
-        path: "/",
-        exact: true,
-        component: Compress,
-    },
-    {
-        path: "*",
-        component: <div>ssss</div>,
-    },
-];
-
 class Main extends PureComponent {
-    constructor() {
+    constructor(props) {
         super();
         this.state = {
             collapsed: false,
+            routes: props.routes,
         };
-        console.log();
     }
 
     toggle = () => {
@@ -70,7 +42,7 @@ class Main extends PureComponent {
     };
 
     render() {
-        const { collapsed } = this.state;
+        const { collapsed, routes } = this.state;
         return (
             <Layout className="main">
                 <Sider trigger={null} collapsible width={256} collapsed={collapsed}>
@@ -92,16 +64,19 @@ class Main extends PureComponent {
                         <div className="main__header--right">
                             <Dropdown overlay={menu} placement="bottomCenter">
                                 <Badge count={1}>
-                                    <Avatar size={40} src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
+                                    <Avatar
+                                        size={40}
+                                        src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
+                                    />
                                 </Badge>
                             </Dropdown>
                         </div>
                     </Header>
                     <Content style={{ margin: "24px 16px 0" }}>
                         <Switch>
-                            {routes.map(route => (
-                                <RouteWithSubRoutes key={route.path} {...route} />
-                            ))}
+                            {routes.map((route) => {
+                                return <RouteWithSubRoutes key={route.path} {...route} />;
+                            })}
                         </Switch>
                         <Footer style={{ textAlign: "center" }}>copyright @ 2019 清科优能</Footer>
                     </Content>

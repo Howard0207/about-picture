@@ -17,7 +17,7 @@ const defaultMenu = [
             },
             {
                 name: "图片压缩",
-                path: "/compress",
+                path: "/book",
                 child: [],
             },
         ],

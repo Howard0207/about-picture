@@ -1,0 +1,46 @@
+@import "../config.less";
+.not-found {
+    padding: 100px 0;
+    width: 100%;
+    background: @white;
+    user-select: none;
+    .not-found__info {
+        margin: 0 auto;
+        width: 400px;
+        color: #8e5e33;
+        font-size: 30px;
+        img {
+            display: block;
+            width: 100%;
+        }
+        .paragraph1 {
+            position: relative;
+            top: -66px;
+        }
+        .paragraph2 {
+            position: relative;
+            top: -60px;
+            left: -150px;
+        }
+    }
+    .not-found__route {
+        .tip {
+            margin: 0 auto;
+            width: 220px;
+            .height(34px);
+            border-left: 58px solid transparent;
+            border-bottom: 34px solid #986d47;
+            border-right: 58px solid transparent;
+            text-align: center;
+            font-size: 16px;
+            color: @white;
+            cursor: pointer;
+        }
+        .bar {
+            width: 10px;
+            height: 90px;
+            background: #986d47;
+            margin: 0 auto;
+        }
+    }
+}

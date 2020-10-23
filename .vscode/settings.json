@@ -5,8 +5,8 @@
         "source.fixAll.eslint": true
     },
     "files.exclude": {
-        // "**/.git": true,
-        // "**/yarn.lock": true,
+        "**/.git": true,
+        "**/yarn.lock": true,
         // "**/dist": true,
         // "**/build": true,
         // "**/webpack.config.js": true,
@@ -14,5 +14,7 @@
         // "**/node_modules": true,
         // "**/.gitignore": true,
         // "**/_dll_vendors": true
+        "**/LICENSE": true,
+        "**/README.md":true
     }
 }
