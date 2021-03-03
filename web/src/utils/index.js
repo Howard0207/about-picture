@@ -40,6 +40,44 @@ export function debounce(fn, delay, immediate) {
 }
 
 /**
+ * 事件绑定方法
+ * @param {type: DomElement, desc: 绑定事件的元素 } obj
+ * @param {type: Event, desc: 监听的事件} ev
+ * @param {type: func, desc: 处理事件的方法} fn
+ */
+function myAddEvent() {
+    if (window.addEventListener) {
+        return (obj, ev, fn) => {
+            obj.addEventListener(ev, fn, false);
+        };
+    }
+    return (obj, ev, fn) => {
+        obj.attachEvent(`on${ev}`, fn);
+    };
+}
+
+export const addEvent = myAddEvent();
+
+/**
+ * 事件解绑
+ * @param {type: DomElement, desc: 解绑事件的元素 } obj
+ * @param {type: Event, desc: 监听的事件} ev
+ * @param {type: func, desc: 处理事件的方法} fn
+ */
+function myRemoveEvent() {
+    if (window.removeEventListener) {
+        return (obj, ev, fn) => {
+            obj.removeEventListener(ev, fn, false);
+        };
+    }
+    return (obj, ev, fn) => {
+        obj.detachEvent(`on${ev}`, fn);
+    };
+}
+
+export const removeEvent = myRemoveEvent();
+
+/**
  * canvas一些基本的工具函数
  */
 
