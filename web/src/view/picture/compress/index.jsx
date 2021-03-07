@@ -9,6 +9,8 @@ import { errorCapture } from "_utils";
 import axios from "axios";
 import "_less/compress";
 
+const CancelToken = axios.CancelToken;
+
 // 所有文件状态
 const Status = {
 	wait: "wait",
@@ -40,12 +42,12 @@ const fileStatusStr = {
 	resume: "恢复",
 };
 
-var chunkSize = 1000 * 1024; // 切片大小
+var chunkSize = 100 * 1024; // 切片大小
 
 class Compress extends PureComponent {
 	constructor(props) {
 		super(props);
-		this.state = { fileList: [], threads: 4 };
+		this.state = { fileList: [], threads: 4, request: [] };
 	}
 
 	// 计算文件大小
@@ -57,16 +59,20 @@ class Compress extends PureComponent {
 		if (size < num) {
 			return size + "B";
 		}
+		// kb
 		if (size < Math.pow(num, 2)) {
 			return (size / num).toFixed(2) + "K";
-		} // kb
+		}
+		// M
 		if (size < Math.pow(num, 3)) {
 			return (size / Math.pow(num, 2)).toFixed(2) + "M";
-		} // M
+		}
+		// G
 		if (size < Math.pow(num, 4)) {
 			return (size / Math.pow(num, 3)).toFixed(2) + "G";
-		} // G
-		return (size / Math.pow(num, 4)).toFixed(2) + "T"; // T
+		}
+		// T
+		return (size / Math.pow(num, 4)).toFixed(2) + "T";
 	};
 
 	// 清空列表
@@ -101,12 +107,7 @@ class Compress extends PureComponent {
 			// 对文件进行分片
 			const fileChunkList = this.createFileChunk(fileList[i].file);
 			fileList[i].chunkData = fileChunkList.map(({ file }, index) => {
-				return {
-					chunk: file,
-					filename: fileList[i].file.name,
-					index,
-					size: file.size,
-				};
+				return { chunk: file, filename: fileList[i].file.name, index, size: file.size };
 			});
 			await this.uploadChunk(fileList[i]);
 		}
@@ -135,25 +136,71 @@ class Compress extends PureComponent {
 		this.forceUpdate();
 	};
 
+	releaseRequest = (source) => {
+		const idx = this.state.request.findIndex((item) => item === source);
+		this.state.request.splice(idx, 1);
+	};
+
+	uploadFileChunk = (requestParams, data, idx) => {
+		const { file } = data;
+		data.loaded[idx] = 0;
+		const source = CancelToken.source();
+		this.state.request.push(source);
+		return axios
+			.post("/upload/picture", requestParams, {
+				cancelToken: source.token,
+				onUploadProgress: (progress) => {
+					const { loaded } = progress;
+					data.loaded[idx] = loaded;
+					console.log(data.loaded, file.size);
+					let totalLoaded = 0;
+					for (let data of data.loaded) {
+						if (!data) data = 0;
+						totalLoaded += data;
+					}
+					data.uploadProgress = parseInt((totalLoaded / file.size) * 100);
+					console.log(data.uploadProgress);
+					if (data.updateProgress > 100) data.updateProgress = 100;
+					this.updateProgress();
+				},
+			})
+			.then((res) => {
+				this.releaseRequest(source);
+				if (res.code === 200) {
+					return res.data;
+				}
+			})
+			.catch(() => {
+				this.releaseRequest(source);
+			});
+	};
+
+	stop = () => {
+		let [source] = this.state.request;
+		console.log("正在取消上传");
+		while (source) {
+			source.cancel();
+			source = this.state.request.shift();
+		}
+	};
+
 	// 发送上传请求
 	sendRequset = (formList, ext, data) => {
 		const { threads } = this.state;
 		const { token } = formList[0];
 		const count = formList.length;
+		let uploadChunkIndex = count;
 		const maxLoop = Math.min(threads, count);
 		let requestMerged = false;
+		data.loaded = [];
 		return new Promise((resolve, reject) => {
 			const handler = async () => {
-				const requestItem = formList.shift();
+				const requestItem = formList.pop();
 				if (requestItem) {
 					const { formData } = requestItem;
-					const [err] = await errorCapture(uploadFileChunk, formData);
-					if (err) {
-					} else {
-						data.uploadProgress = parseInt((1 - formList.length / count) * 100);
-						this.updateProgress();
-						handler();
-					}
+					uploadChunkIndex--;
+					await this.uploadFileChunk(formData, data, uploadChunkIndex);
+					handler();
 				} else {
 					if (!requestMerged) {
 						requestMerged = true;
@@ -170,6 +217,16 @@ class Compress extends PureComponent {
 				handler();
 			}
 		});
+	};
+
+	getUploadStatus = (uploadProgress) => {
+		if (uploadProgress === 0) {
+			return "待上传";
+		} else if (uploadProgress === 100) {
+			return "已上传";
+		} else {
+			return "上传中";
+		}
 	};
 
 	render() {
@@ -195,7 +252,7 @@ class Compress extends PureComponent {
 						</Button>
 					</Upload>
 					<Button onClick={this.handleUpload}>上传</Button>
-					<Button>暂停</Button>
+					<Button onClick={this.stop}>暂停</Button>
 					<Button>恢复</Button>
 					<Button onClick={this.emptyFile}>清空</Button>
 				</header>
@@ -213,7 +270,7 @@ class Compress extends PureComponent {
 												<Progress percent={item.uploadProgress} status="active" />
 											</div>
 										</div>
-										<div className="upload-status">待上传</div>
+										<div className="upload-status">{this.getUploadStatus(item.uploadProgress)}</div>
 									</div>
 								);
 							})}
