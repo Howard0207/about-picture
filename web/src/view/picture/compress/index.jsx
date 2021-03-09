@@ -2,7 +2,7 @@ import React, { PureComponent } from "react";
 import { withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
 import { Button, Upload, Progress, Empty } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined, PlayCircleOutlined, PauseCircleOutlined } from "@ant-design/icons";
 import QueueAnim from "rc-queue-anim";
 import { uploadFileChunk } from "_api";
 import { errorCapture } from "_utils";
@@ -47,7 +47,7 @@ var chunkSize = 100 * 1024; // 切片大小
 class Compress extends PureComponent {
 	constructor(props) {
 		super(props);
-		this.state = { fileList: [], threads: 4, request: [] };
+		this.state = { fileList: [], threads: 4, request: [], uploadQueue: [] };
 	}
 
 	// 计算文件大小
@@ -76,9 +76,7 @@ class Compress extends PureComponent {
 	};
 
 	// 清空列表
-	emptyFile = () => {
-		this.setState({ fileList: [] });
-	};
+	emptyFile = () => this.setState({ fileList: [], request: [], uploadQueue: [] });
 
 	// 文件分片
 	createFileChunk = (file, size = chunkSize) => {
@@ -113,28 +111,9 @@ class Compress extends PureComponent {
 		}
 	};
 
-	// 上传分片
-	uploadChunk = async (data) => {
-		const token = +new Date();
-		const { chunkData, file } = data;
-		const ext = file.name.split(".").pop();
-		const formList = chunkData
-			.filter((item) => !item.chunk.uploaded)
-			.map(({ chunk, index, filename }) => {
-				const formData = new FormData();
-				formData.append("fileIndex", index);
-				formData.append("file", chunk);
-				formData.append("token", token);
-				return { formData, index, filename, token };
-			});
-		this.sendRequset(formList, ext, data);
-	};
-
 	calculateFileHash = (fileChunkList) => {};
 
-	updateProgress = () => {
-		this.forceUpdate();
-	};
+	updateProgress = () => this.forceUpdate();
 
 	releaseRequest = (source) => {
 		const idx = this.state.request.findIndex((item) => item === source);
@@ -142,81 +121,202 @@ class Compress extends PureComponent {
 	};
 
 	uploadFileChunk = (requestParams, data, idx) => {
-		const { file } = data;
-		data.loaded[idx] = 0;
-		const source = CancelToken.source();
-		this.state.request.push(source);
-		return axios
-			.post("/upload/picture", requestParams, {
-				cancelToken: source.token,
-				onUploadProgress: (progress) => {
-					const { loaded } = progress;
-					data.loaded[idx] = loaded;
-					console.log(data.loaded, file.size);
-					let totalLoaded = 0;
-					for (let data of data.loaded) {
-						if (!data) data = 0;
-						totalLoaded += data;
+		const { file, chunkData } = data;
+		data.loaded[idx] = data.loaded[idx] || 0;
+		if (chunkData[idx].size >= data.loaded[idx]) {
+			const source = CancelToken.source();
+			this.state.request.push(source);
+			console.log(data);
+			return axios
+				.post("/upload/picture", requestParams, {
+					cancelToken: source.token,
+					onUploadProgress: (progress) => {
+						const { loaded } = progress;
+						data.loaded[idx] = loaded;
+						// console.log(data.loaded, file.size);
+						let totalLoaded = 0;
+						for (let data of data.loaded) {
+							if (!data) data = 0;
+							totalLoaded += data;
+						}
+						data.uploadProgress = parseInt((totalLoaded / file.size) * 100);
+						console.log(data.uploadProgress);
+						if (data.updateProgress > 100) data.updateProgress = 100;
+						this.updateProgress();
+					},
+				})
+				.then((res) => {
+					this.releaseRequest(source);
+					if (res.code === 200) {
+						return res.data;
 					}
-					data.uploadProgress = parseInt((totalLoaded / file.size) * 100);
-					console.log(data.uploadProgress);
-					if (data.updateProgress > 100) data.updateProgress = 100;
-					this.updateProgress();
-				},
-			})
-			.then((res) => {
-				this.releaseRequest(source);
-				if (res.code === 200) {
-					return res.data;
-				}
-			})
-			.catch(() => {
-				this.releaseRequest(source);
-			});
-	};
-
-	stop = () => {
-		let [source] = this.state.request;
-		console.log("正在取消上传");
-		while (source) {
-			source.cancel();
-			source = this.state.request.shift();
+				});
+			// .catch(() => {
+			// 	console.log("错误的release了");
+			// 	this.releaseRequest(source);
+			// });
+		} else {
+			return Promise.resolve();
 		}
 	};
 
-	// 发送上传请求
-	sendRequset = (formList, ext, data) => {
-		const { threads } = this.state;
-		const { token } = formList[0];
-		const count = formList.length;
-		let uploadChunkIndex = count;
-		const maxLoop = Math.min(threads, count);
-		let requestMerged = false;
-		data.loaded = [];
-		return new Promise((resolve, reject) => {
-			const handler = async () => {
-				const requestItem = formList.pop();
-				if (requestItem) {
-					const { formData } = requestItem;
-					uploadChunkIndex--;
-					await this.uploadFileChunk(formData, data, uploadChunkIndex);
-					handler();
-				} else {
-					if (!requestMerged) {
-						requestMerged = true;
-						const [err] = await errorCapture(uploadFileChunk, { type: "merge", count, token, ext });
-						if (err) {
-						} else {
-							data.status = "success";
-							resolve("finished");
+	// 判断文件是否分片
+	isFileSplitToChunk = (file) => {
+		if (Array.isArray(file.chunkData) && file.chunkData.length) {
+			return true;
+		}
+		return false;
+	};
+
+	// 初始化chunk上传参数
+	initUploadChunkParams = (data) => {
+		const { chunkData, file, cur, token } = data;
+		const ext = file.name.split(".").pop();
+		const formData = new FormData();
+		formData.append("fileIndex", cur);
+		formData.append("file", chunkData[cur].chunk);
+		formData.append("token", token);
+		return { formData, token, ext };
+	};
+
+	uploadChunkF = (requestParams, data, cur) => {
+		const { file, chunkData, uploadChunkStatus } = data;
+		const { request } = this.state;
+		console.log(cur);
+		data.loaded[cur] = data.loaded[cur] || 0;
+		if (chunkData[cur].size >= data.loaded[cur]) {
+			const source = CancelToken.source();
+			request.push(source);
+			uploadChunkStatus[cur] = "uploading";
+			return axios
+				.post("/upload/picture", requestParams, {
+					cancelToken: source.token,
+					onUploadProgress: (progress) => {
+						const { loaded } = progress;
+						data.loaded[cur] = loaded;
+						let totalLoaded = 0;
+						for (let data of data.loaded) {
+							if (!data) data = 0;
+							totalLoaded += data;
 						}
+						data.uploadProgress = parseInt((totalLoaded / file.size) * 100);
+						if (data.updateProgress > 100) data.updateProgress = 100;
+						this.updateProgress();
+					},
+				})
+				.then((res) => {
+					this.releaseRequest(source);
+					if (res.data.status === 200) {
+						uploadChunkStatus[cur] = "uploaded";
+						return res.data;
 					}
+				});
+		} else {
+			return Promise.resolve();
+		}
+	};
+
+	handleUploadFile = (file) => {
+		const params = this.initUploadChunkParams(file);
+		const { cur, chunkData } = file;
+		const { formData, token, ext } = params;
+		const { uploadQueue, request, threads } = this.state;
+		const uploadProcess = this.uploadChunkF(formData, file, cur);
+		uploadProcess.then(() => {
+			if (file.cur < file.chunkData.length) {
+				this.handleUploadFile(file);
+				file.cur++;
+			} else {
+				const findResult = file.uploadChunkStatus.find((item) => item === "uploading");
+				console.log(findResult);
+				if (!findResult) {
+					const idx = uploadQueue.findIndex((item) => item === file);
+					uploadQueue.splice(idx, 1);
+					axios.post("/upload/picture", { type: "merge", count: chunkData.length, token, ext });
+					this.setState({ uploadQueue }, () => {
+						// const waitItem = uploadQueue.find((item) => !item.uploadStatus);
+						if (request.length < threads) {
+							this.upload();
+						}
+					});
+					file.uploadStatus = "success";
 				}
-			};
-			for (let i = 0; i < maxLoop; i++) {
-				handler();
 			}
 		});
+	};
+
+	// 文件上传
+	upload = () => {
+		const { uploadQueue, threads, request } = this.state;
+		let idx = 0;
+		let left = 0;
+		let count = 0;
+		for (; idx < uploadQueue.length && request.length < threads; idx++) {
+			const file = uploadQueue[idx];
+			if (!file.uploadStatus) {
+				file.cur = 0;
+				file.uploadStatus = "updating";
+				this.handleUploadFile(file);
+				file.cur++;
+			}
+		}
+		while (request.length < threads && uploadQueue.length > 0 && count < 4) {
+			left = left < uploadQueue.length ? left : 0;
+			const file = uploadQueue[left];
+			if (file.cur < file.chunkData.length) {
+				this.handleUploadFile(file);
+				idx++;
+				file.cur++;
+			}
+			count++;
+			left++;
+		}
+	};
+
+	// 单文件开始上传
+	start = async (upfile) => {
+		const { uploadQueue } = this.state;
+		if (!this.isFileSplitToChunk(upfile)) {
+			const fileChunkList = this.createFileChunk(upfile.file);
+			upfile.loaded = [];
+			upfile.uploadChunkStatus = [];
+			upfile.token = +new Date();
+			upfile.chunkData = fileChunkList.map(({ file }, index) => {
+				return { chunk: file, filename: upfile.file.name, index, size: file.size };
+			});
+		}
+		uploadQueue.push(upfile);
+		this.setState({ uploadQueue }, this.upload);
+	};
+
+	// 所有文件一起上传
+	startAll = async () => {
+		const { uploadQueue, fileList } = this.state;
+		fileList.forEach((item, idx) => {
+			if (!item.uploadStatus && !this.isFileSplitToChunk(item)) {
+				const fileChunkList = this.createFileChunk(item.file);
+				item.loaded = [];
+				item.uploadChunkStatus = [];
+				item.token = +new Date() + idx;
+				item.chunkData = fileChunkList.map(({ file }, index) => {
+					return { chunk: file, filename: item.file.name, index, size: file.size };
+				});
+				uploadQueue.push(item);
+			}
+		});
+		this.setState({ uploadQueue }, this.upload);
+	};
+
+	// 单文件停止上传
+	stop = (item) => {
+		this.cancelRequest = true;
+		let source = this.state.request.shift();
+		console.log("正在取消上传");
+		while (source) {
+			source.cancel("取消请求");
+			console.log(this.state.request);
+			source = this.state.request.shift();
+		}
 	};
 
 	getUploadStatus = (uploadProgress) => {
@@ -251,9 +351,7 @@ class Compress extends PureComponent {
 							选择文件
 						</Button>
 					</Upload>
-					<Button onClick={this.handleUpload}>上传</Button>
-					<Button onClick={this.stop}>暂停</Button>
-					<Button>恢复</Button>
+					<Button onClick={this.startAll}>全部开始</Button>
 					<Button onClick={this.emptyFile}>清空</Button>
 				</header>
 				<main className="compress__main">
@@ -267,8 +365,19 @@ class Compress extends PureComponent {
 										<div className="upload-progress">
 											<span className="label">进度：</span>
 											<div className="content">
-												<Progress percent={item.uploadProgress} status="active" />
+												<Progress percent={item.uploadProgress} status={item.uploadProgress === 100 ? null : "active"} />
 											</div>
+											{item.uploadProgress === 0 ? (
+												<PlayCircleOutlined
+													onClick={() => this.start(item)}
+													style={{ marginLeft: "30px", fontSize: "20px", color: "#1890ff" }}
+												/>
+											) : item.uploadProgress < 100 ? (
+												<PauseCircleOutlined
+													onClick={() => this.stop(item)}
+													style={{ marginLeft: "30px", fontSize: "20px", color: "#1890ff" }}
+												/>
+											) : null}
 										</div>
 										<div className="upload-status">{this.getUploadStatus(item.uploadProgress)}</div>
 									</div>
