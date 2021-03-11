@@ -20,6 +20,10 @@ module.exports = {
 		host: "0.0.0.0",
 		hot: true,
 		historyApiFallback: true,
+		headers: {
+			"X-Content-Type-Options": "nosniff",
+			"X-Powered-By": "",
+		},
 		proxy: [
 			{
 				context: ["/account", "/upload", "/pictures", "/compress", "/primary-electrical"],
