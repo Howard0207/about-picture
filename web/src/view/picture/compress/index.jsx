@@ -4,8 +4,6 @@ import PropTypes from "prop-types";
 import { Button, Upload, Progress, Empty } from "antd";
 import { UploadOutlined, PlayCircleOutlined, PauseCircleOutlined, RedoOutlined } from "@ant-design/icons";
 import QueueAnim from "rc-queue-anim";
-import { uploadFileChunk } from "_api";
-import { errorCapture } from "_utils";
 import axios from "axios";
 import "_less/compress";
 
@@ -24,6 +22,7 @@ const Status = {
 // 单个文件的状态
 const fileStatus = {
 	wait: "wait",
+	enqueue: "enqueue",
 	uploading: "uploading",
 	success: "success",
 	error: "error",
@@ -111,49 +110,11 @@ class Compress extends PureComponent {
 		}
 	};
 
-	calculateFileHash = (fileChunkList) => {};
-
 	updateProgress = () => this.forceUpdate();
 
 	releaseRequest = (source) => {
 		const idx = this.state.request.findIndex((item) => item === source);
 		this.state.request.splice(idx, 1);
-	};
-
-	uploadFileChunk = (requestParams, data, idx) => {
-		const { file, chunkData } = data;
-		data.loaded[idx] = data.loaded[idx] || 0;
-		if (chunkData[idx].size >= data.loaded[idx]) {
-			const source = CancelToken.source();
-			this.state.request.push(source);
-			console.log(data);
-			return axios
-				.post("/upload/picture", requestParams, {
-					cancelToken: source.token,
-					onUploadProgress: (progress) => {
-						const { loaded } = progress;
-						data.loaded[idx] = loaded;
-						// console.log(data.loaded, file.size);
-						let totalLoaded = 0;
-						for (let data of data.loaded) {
-							if (!data) data = 0;
-							totalLoaded += data;
-						}
-						data.uploadProgress = parseInt((totalLoaded / file.size) * 100);
-						console.log(data.uploadProgress);
-						if (data.updateProgress > 100) data.updateProgress = 100;
-						this.updateProgress();
-					},
-				})
-				.then((res) => {
-					this.releaseRequest(source);
-					if (res.code === 200) {
-						return res.data;
-					}
-				});
-		} else {
-			return Promise.resolve();
-		}
 	};
 
 	// 判断文件是否分片
@@ -175,14 +136,19 @@ class Compress extends PureComponent {
 		return { formData, token, ext };
 	};
 
+	releaseFileInfoThread = (threads, source) => {
+		const idx = threads.findIndex((item) => item === source);
+		threads.splice(idx, 1);
+	};
+
 	uploadChunkF = (requestParams, data, cur) => {
-		const { file, chunkData, uploadChunkStatus } = data;
+		const { file, chunkData, uploadChunkStatus, threads } = data;
 		const { request } = this.state;
-		console.log(cur);
 		data.loaded[cur] = data.loaded[cur] || 0;
 		if (chunkData[cur].size >= data.loaded[cur]) {
 			const source = CancelToken.source();
 			request.push(source);
+			threads.push(source);
 			uploadChunkStatus[cur] = "uploading";
 			return axios
 				.post("/upload/picture", requestParams, {
@@ -202,6 +168,7 @@ class Compress extends PureComponent {
 				})
 				.then((res) => {
 					this.releaseRequest(source);
+					this.releaseFileInfoThread(threads, source);
 					if (res.data.status === 200) {
 						uploadChunkStatus[cur] = "uploaded";
 						return res.data;
@@ -248,7 +215,7 @@ class Compress extends PureComponent {
 		let count = 0; // 资源再分配计数器， 防止死循环
 		for (let idx = 0; idx < uploadQueue.length && request.length < threads; idx++) {
 			const file = uploadQueue[idx];
-			if (file.status === fileStatus.wait) {
+			if (file.status === fileStatus.enqueue) {
 				file.cur = 0;
 				file.status = fileStatus.uploading;
 				this.handleUploadFile(file);
@@ -271,11 +238,14 @@ class Compress extends PureComponent {
 	initFileInfo = (fileInfo) => {
 		const { file } = fileInfo;
 		const { uid, name } = file;
-		if (fileInfo.status === "wait" && !this.isFileSplitToChunk(fileInfo)) {
+		if (fileInfo.status === "wait" || !this.isFileSplitToChunk(fileInfo)) {
 			const fileChunkList = this.createFileChunk(fileInfo.file);
 			fileInfo.loaded = [];
 			fileInfo.uploadChunkStatus = [];
 			fileInfo.token = uid;
+			fileInfo.threads = [];
+			fileInfo.leftIndexList = [];
+			fileInfo.status = fileStatus.enqueue;
 			fileInfo.chunkData = fileChunkList.map(({ chunk }, index) => ({ chunk: chunk, filename: name, index, size: chunk.size }));
 		}
 	};
@@ -283,7 +253,6 @@ class Compress extends PureComponent {
 	// 单文件上传
 	start = async (fileInfo) => {
 		const { uploadQueue } = this.state;
-		console.log(fileInfo);
 
 		// 初始化文件信息
 		this.initFileInfo(fileInfo);
@@ -307,37 +276,70 @@ class Compress extends PureComponent {
 		this.setState({ uploadQueue }, this.upload);
 	};
 
-	// 单文件停止上传
-	stop = (item) => {
-		this.cancelRequest = true;
-		let source = this.state.request.shift();
-		console.log("正在取消上传");
+	// 释放上传文件所占线程资源
+	releaseFileThreads = (fileInfo) => {
+		const { threads } = fileInfo;
+		const { request } = this.state;
+		let source = threads.shift();
 		while (source) {
-			source.cancel("取消请求");
-			console.log(this.state.request);
-			source = this.state.request.shift();
+			source.cancel("取消上传");
+			const idx = request.findIndex((item) => item === source);
+			if (idx > -1) {
+				request.splice(idx, 1);
+			}
+			source = threads.shift();
 		}
 	};
 
-	resume = (item) => {
-		if (!this.isFileSplitToChunk(item)) {
-			this.start();
-		} else {
+	// 上传文件出栈
+	fileInfoDequeue = (fileInfo) => {
+		const { uploadQueue } = this.state;
+		const idx = uploadQueue.findIndex((item) => item === fileInfo);
+		if (idx > -1) {
+			uploadQueue.splice(idx, 1);
 		}
+	};
+
+	// 重置指针
+	resetFileInfoPointer = (fileInfo) => {
+		const { uploadChunkStatus } = fileInfo;
+		const idx = uploadChunkStatus.findIndex((status) => status === Status.uploading);
+		fileInfo.cur = idx > -1 ? idx : 0;
+	};
+
+	// 单文件停止上传
+	stop = (fileInfo) => {
+		fileInfo.status = fileStatus.pause;
+		this.fileInfoDequeue(fileInfo);
+		this.releaseFileThreads(fileInfo);
+		this.upload();
+		this.resetFileInfoPointer(fileInfo);
+		this.forceUpdate();
+	};
+
+	resume = (fileInfo) => {
+		const { uploadQueue } = this.state;
+		console.log(fileInfo);
+		fileInfo.status = fileStatus.uploading;
+		// 将文件压入上传队列
+		uploadQueue.push(fileInfo);
+		// 启动上传任务
+		this.setState({ uploadQueue }, this.upload);
 	};
 
 	// 单文件操作按钮
 	operationBtn = (item) => {
 		switch (item.status) {
 			case fileStatus.pause:
-				return <RedoOutlined />;
+				return <RedoOutlined onClick={() => this.resume(item)} className="operationBtn" />;
 			case fileStatus.wait:
-				return <PlayCircleOutlined onClick={() => this.start(item)} style={{ marginLeft: "30px", fontSize: "20px", color: "#1890ff" }} />;
+				return <PlayCircleOutlined onClick={() => this.start(item)} className="operationBtn" />;
 			case fileStatus.uploading:
-				return <PauseCircleOutlined onClick={() => this.stop(item)} style={{ marginLeft: "30px", fontSize: "20px", color: "#1890ff" }} />;
+			case fileStatus.enqueue:
+				return <PauseCircleOutlined onClick={() => this.stop(item)} className="operationBtn" />;
 			case fileStatus.success:
 			default:
-				return null;
+				return <div className="operationBtn"></div>;
 		}
 	};
 
@@ -379,8 +381,8 @@ class Compress extends PureComponent {
 											<div className="content">
 												<Progress percent={item.uploadProgress} status={item.uploadProgress === 100 ? null : "active"} />
 											</div>
-											{this.operationBtn(item)}
 										</div>
+										{this.operationBtn(item)}
 										<div className="upload-status">{fileStatusStr[item.status]}</div>
 									</div>
 								);

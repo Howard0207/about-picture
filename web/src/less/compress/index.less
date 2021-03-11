@@ -1,60 +1,68 @@
 @import "../config.less";
 .compress {
-    .compress__header {
-        display: flex;
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: @white;
-        border-radius: 5px;
-        > .ant-btn {
-            margin: 0 5px;
-        }
-        .ant-upload-select {
-            margin-right: 5px;
-        }
-    }
-    .compress__main {
-        padding: 15px;
-        background-color: @white;
-        border-radius: 4px;
-        .upload-item {
-            display: flex;
-            margin-bottom: 15px;
-            height: 50px;
-            line-height: 48px;
-            border: 1px solid @gray-border;
-            border-radius: 5px;
-            background: @white;
-            &:last-child {
-                margin-bottom: 0;
-            }
-            .common-style {
-                flex: 1 0;
-                margin: 0 15px;
-                .text-overflow();
-            }
-            .upload-name {
-                .common-style;
-                flex-basis: 200px;
-            }
-            .upload-size {
-                .common-style;
-                flex-basis: 100px;
-            }
-            .upload-progress {
-                flex: 1 0 500px;
-                margin: 0 15px;
-                display: flex;
-                align-items: center;
-                .content {
-                    flex: 1;
-                }
-            }
-            .upload-status {
-                .common-style;
-                flex-basis: 80px;
-                text-align: center;
-            }
-        }
-    }
+	.compress__header {
+		display: flex;
+		margin-bottom: 20px;
+		padding: 15px;
+		background-color: @white;
+		border-radius: 5px;
+		> .ant-btn {
+			margin: 0 5px;
+		}
+		.ant-upload-select {
+			margin-right: 5px;
+		}
+	}
+	.compress__main {
+		padding: 15px;
+		background-color: @white;
+		border-radius: 4px;
+		.upload-item {
+			display: flex;
+			align-items: center;
+			margin-bottom: 15px;
+			height: 50px;
+			line-height: 48px;
+			border: 1px solid @gray-border;
+			border-radius: 5px;
+			background: @white;
+			&:last-child {
+				margin-bottom: 0;
+			}
+			.common-style {
+				margin: 0 20px;
+				.text-overflow();
+			}
+			.upload-name {
+				.common-style;
+				flex: 1 0 100px;
+				max-width: 200px;
+			}
+			.upload-size {
+				.common-style;
+				width: 100px;
+			}
+			.upload-progress {
+				flex: 1 0 400px;
+				margin: 0 15px;
+				display: flex;
+				align-items: center;
+				.content {
+					flex: 1;
+				}
+			}
+			.operationBtn {
+				margin: 0 20px;
+				width: 18px;
+				font-size: 18px;
+				font-weight: bold;
+				color: #36a2ff;
+			}
+			.upload-status {
+				.common-style;
+				width: 80px;
+				text-align: center;
+			}
+		}
+	}
 }
