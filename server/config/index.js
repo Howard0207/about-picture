@@ -3,7 +3,7 @@ const MYSQL_CONFIG = {
 	host: "localhost",
 	user: "root",
 	password: "root",
-	database: "electrical-graphic",
+	database: "about-picture",
 	waitForConnections: true,
 	connectionLimit: 10,
 	queueLimit: 0,

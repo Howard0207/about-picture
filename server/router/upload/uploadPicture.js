@@ -24,13 +24,15 @@ const mergeFile = (token, count, ext) => {
 				if (++start < count) {
 					writeFile();
 				} else {
-					resolve("finished");
+					resolve(`/upload-files/${uuid}.${ext}`);
 				}
 			});
 		};
 		writeFile();
 	});
 };
+
+const insertImagePath = (path) => {};
 
 router.post("/picture", async (ctx) => {
 	// 获取前端file
@@ -55,8 +57,9 @@ router.post("/picture", async (ctx) => {
 	// 合并文件 -> 写入到新的目录中去
 	if (type === "merge") {
 		try {
-			const res = await mergeFile(token, count, ext);
-			if (res === "finished") {
+			const path = await mergeFile(token, count, ext);
+			const insert = await insertImagePath(path);
+			if (res) {
 				ctx.body = { status: 200, msg: "文件合并成功" };
 				return true;
 			}

@@ -11,7 +11,7 @@ const upload = require("./router/upload");
 const primaryElectricalOverview = require("./router/primary-electrical-overview");
 const app = new Koa();
 
-app.use(koaStatic("public"));
+app.use(koaStatic("upload-files"));
 
 // 路由鉴权
 // app.use((ctx, next) => {
@@ -38,10 +38,10 @@ app.use(koaStatic("public"));
  * 上传文件大小限制 20Mb
  */
 app.use(
-    koaBody({
-        multipart: true,
-        formidable: { multiples: true, keepExtensions: true, uploadDir: "upload-temp", maxFileSize: 20 * 1024 * 1024 },
-    })
+	koaBody({
+		multipart: true,
+		formidable: { multiples: true, keepExtensions: true, uploadDir: "upload-temp", maxFileSize: 20 * 1024 * 1024 },
+	})
 );
 
 // 添加 account 路由
@@ -54,5 +54,5 @@ app.use(upload);
 app.use(primaryElectricalOverview);
 
 app.listen(10100, () => {
-    console.log("服务已启动，10100端口监听中...");
+	console.log("服务已启动，10100端口监听中...");
 });
