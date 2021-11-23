@@ -1,29 +1,31 @@
 {
-    "name": "about-picture-server",
-    "version": "1.0.0",
-    "main": "index.js",
-    "license": "MIT",
-    "scripts": {
-        "serve": "nodemon ./index.js --trace-deprecation"
-    },
-    "devDependencies": {
-        "eslint": "^7.6.0",
-        "nodemon": "^2.0.4"
-    },
-    "dependencies": {
-        "@koa/router": "^9.3.1",
-        "formidable": "^1.2.2",
-        "jsonwebtoken": "^8.5.1",
-        "koa-body": "^4.2.0",
-        "koa-jwt": "^4.0.0",
-        "koa-static": "^5.0.0",
-        "koa2": "^2.0.0-alpha.7",
-        "log4js": "^6.3.0",
-        "moment": "^2.27.0",
-        "mysql": "^2.18.1",
-        "nodemailer": "^6.7.1",
-        "redis": "^3.0.2",
-        "sequelize": "^6.5.1",
-        "uuid": "^8.3.0"
-    }
+  "name": "about-picture-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "serve": "nodemon --trace-deprecation ./index.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.3.0",
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "@koa/router": "^10.1.1",
+    "canvas": "^2.8.0",
+    "formidable": "^2.0.1",
+    "jsonwebtoken": "^8.5.1",
+    "koa": "^2.13.4",
+    "koa-body": "^4.2.0",
+    "koa-jwt": "^4.0.3",
+    "koa-static": "^5.0.0",
+    "log4js": "^6.3.0",
+    "moment": "^2.29.1",
+    "mysql": "^2.18.1",
+    "nodemailer": "^6.7.1",
+    "redis": "^3.1.2",
+    "sequelize": "^6.11.0",
+    "uuid": "^8.3.2"
+  },
+  "info": "JSVGORKVYZSPQQEE"
 }
