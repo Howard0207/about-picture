@@ -2,6 +2,8 @@ const fs = require("fs");
 const Router = require("@koa/router");
 const router = new Router();
 const { generateUUID } = require("../../utils");
+var log4js = require('log4js');
+var logger = log4js.getLogger();
 // 获取当前文件目录
 const curDir = process.cwd();
 
@@ -37,41 +39,50 @@ const insertImagePath = (path) => {};
 router.post("/picture", async (ctx) => {
 	// 获取前端file
 	let { files } = ctx.request;
-	const { token, fileIndex, type, count, ext } = ctx.request.body;
-
+	const { fileToken, fileIndex, type, count, ext } = ctx.request.body;
 	// 处理文件 -> 重命名
 	if (files) {
 		let originPath = files.file.path;
-		let newPath = originPath.slice(0, originPath.lastIndexOf("\\") + 1) + fileIndex + "-" + token;
+		let newPath = originPath.slice(0, originPath.lastIndexOf("\\") + 1) + fileIndex + "-" + fileToken;
 		try {
-			await fs.rename(originPath, newPath, (err) => {
-				if (err) throw err;
+			fs.rename(originPath, newPath, (err) => {
+				if (err) {
+					throw err;
+				}
 			});
 		} catch (error) {
-			ctx.body = { status: 500, msg: "上传失败" };
+			ctx.body = { code: 500, msg: "上传失败" };
 		}
-		ctx.body = { status: 200, msg: "上传成功" };
-		return false;
+		ctx.body = { code: 200, msg: "上传成功" };
+		return true;
 	}
-
 	// 合并文件 -> 写入到新的目录中去
 	if (type === "merge") {
 		try {
-			const path = await mergeFile(token, count, ext);
+			const path = await mergeFile(fileToken, count, ext);
 			const insert = await insertImagePath(path);
-			if (res) {
-				ctx.body = { status: 200, msg: "文件合并成功" };
+			if (path) {
+				ctx.body = { code: 200, path, msg: "文件合并成功" };
 				return true;
 			}
 		} catch (error) {
-			ctx.body = { status: 500, msg: "文件合并失败" };
+			ctx.body = { code: 500, msg: "文件合并失败" };
 			return false;
 		}
 	}
 	ctx.body = {
-		status: 405,
+		code: 405,
 		msg: "文件上传失败",
 	};
 });
+
+router.post("/test", async (ctx) => {
+	ctx.body  = {
+		code: 200,
+		data: {
+			msg: "Hello World!"
+		}
+	}
+})
 
 module.exports = router.routes();

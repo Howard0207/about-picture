@@ -1,13 +1,18 @@
 const jwt = require("jsonwebtoken");
 const { TOKENSECRET } = require("../config");
-const tokenPaser = (ctx, next) => {
+const log4js = require('log4js');
+const logger = log4js.getLogger();
+const tokenPaser = async (ctx, next) => {
     const { request } = ctx;
-    const { authorization } = request.headers;
-    if (authorization) {
+    const { Authorization } = request.headers;
+    logger.trace(Authorization)
+    if (Authorization) {
         try {
-            const originToken = authorization.split(" ")[1];
+            const originToken = Authorization.split(" ")[1];
+            logger.trace(originToken);
             const parsedToken = {};
             const decoded = jwt.verify(originToken, TOKENSECRET);
+            logger.info(decoded)
             Object.keys(decoded).forEach(key => {
                 parsedToken[key] = decoded[key];
             });
@@ -18,7 +23,7 @@ const tokenPaser = (ctx, next) => {
             return;
         }
     }
-    next();
+    await next();
 };
 
 module.exports = tokenPaser;
