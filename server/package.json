@@ -7,7 +7,9 @@
     "serve": "nodemon --trace-deprecation ./index.js"
   },
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
     "eslint": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
     "nodemon": "^2.0.15"
   },
   "dependencies": {

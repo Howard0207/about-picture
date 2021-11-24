@@ -15,7 +15,7 @@ app.use(koaStatic("upload-files"));
 
 // 路由鉴权
 app.use(handleAuth);
-app.use(koajwt({ secret: TOKENSECRET }).unless({ path: [/^\/account/] }));
+app.use(koajwt({ secret: TOKENSECRET }).unless({ path: [/^\/account/, /^\/validate/] }));
 
 // token 解析到request对象上
 app.use(tokenPaser);

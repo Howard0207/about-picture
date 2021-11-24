@@ -35,5 +35,5 @@ class ErrorResponse extends BaseResponse {
 
 module.exports = {
     SuccessResponse,
-    ErrorResponse,
+    ErrorResponse
 };

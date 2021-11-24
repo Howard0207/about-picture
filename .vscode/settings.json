@@ -16,5 +16,5 @@
         // "**/_dll_vendors": true
         "**/LICENSE": true,
         "**/README.md":true
-    }
+    },
 }
